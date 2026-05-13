@@ -34,6 +34,7 @@
     width: 860px;
     height: 660px;
     position: relative;
+    overflow: hidden;
   }
   .screen {
     display: none;
@@ -901,11 +902,179 @@
   /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: var(--honey); border-radius: 2px; }
+
+  /* =============== SLIDE-OUT MENU =============== */
+  .menu-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 100;
+    border-radius: 12px;
+  }
+  .menu-overlay.active { display: block; }
+
+  .slide-menu {
+    position: absolute;
+    top: 0; left: 0;
+    width: 260px;
+    height: 100%;
+    background: var(--honey-bg);
+    z-index: 101;
+    border-radius: 12px 0 0 12px;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+    overflow-y: auto;
+  }
+  .slide-menu.active { transform: translateX(0); }
+
+  .slide-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .slide-menu-logo {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 17px;
+    letter-spacing: 1px;
+  }
+  .menu-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--text);
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .menu-close:hover { background: rgba(0,0,0,0.08); }
+
+  .slide-menu-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+    flex: 1;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.15s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .menu-item:hover { background: rgba(212,160,23,0.15); }
+  .menu-item .menu-item-left { display: flex; align-items: center; gap: 10px; }
+
+  .menu-chevron {
+    font-size: 18px;
+    font-weight: 300;
+    transition: transform 0.25s;
+    display: inline-block;
+    color: var(--text-muted);
+  }
+  .menu-chevron.open { transform: rotate(90deg); }
+
+  .menu-dropdown {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: rgba(0,0,0,0.04);
+  }
+  .menu-dropdown.open { max-height: 300px; }
+
+  .menu-subitem {
+    display: block;
+    padding: 10px 20px 10px 42px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .menu-subitem:hover { background: rgba(212,160,23,0.12); color: var(--text); }
+
+  .menu-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 16px;
+  }
+
+  /* Hamburger → X animation */
+  .hdr .menu-btn span {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .hdr .menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hdr .menu-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hdr .menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 </style>
 </head>
 <body>
 
 <div class="app-wrapper">
+
+  <!-- ===== SLIDE-OUT MENU ===== -->
+  <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+  <div class="slide-menu" id="slide-menu">
+    <div class="slide-menu-header">
+      <div class="slide-menu-logo">THE HIVE 🐝</div>
+      <button class="menu-close" onclick="toggleMenu()">✕</button>
+    </div>
+    <nav class="slide-menu-nav">
+      <a class="menu-item" onclick="menuGoTo('splash')">
+        <span class="menu-item-left">🏠 Home</span>
+      </a>
+      <button class="menu-item has-dropdown" onclick="toggleDropdown('features-drop','features-chev')">
+        <span class="menu-item-left">⚙️ Features</span>
+        <span class="menu-chevron" id="features-chev">›</span>
+      </button>
+      <div class="menu-dropdown" id="features-drop">
+        <a class="menu-subitem" onclick="menuGoTo('features')">🔊 Noise Level</a>
+        <a class="menu-subitem" onclick="menuGoTo('features')">👥 Seat Availability</a>
+        <a class="menu-subitem" onclick="menuGoTo('features')">🔌 Outlet Availability</a>
+        <a class="menu-subitem" onclick="menuGoTo('features')">🍿 Snacks Near Me</a>
+      </div>
+      <a class="menu-item" onclick="menuGoTo('honeyspot')">
+        <span class="menu-item-left">🍯 Honey Spot</span>
+      </a>
+      <a class="menu-item" onclick="menuGoTo('reserve')">
+        <span class="menu-item-left">📅 Reserve a Spot</span>
+      </a>
+      <a class="menu-item" onclick="menuGoTo('notifs')">
+        <span class="menu-item-left">🔔 Notifications</span>
+      </a>
+      <a class="menu-item" onclick="toggleMenu(); alert('Coming soon!')">
+        <span class="menu-item-left">📋 My Reservations</span>
+      </a>
+      <div class="menu-divider"></div>
+      <button class="menu-item has-dropdown" onclick="toggleDropdown('settings-drop','settings-chev')">
+        <span class="menu-item-left">⚙️ Settings</span>
+        <span class="menu-chevron" id="settings-chev">›</span>
+      </button>
+      <div class="menu-dropdown" id="settings-drop">
+        <a class="menu-subitem" onclick="menuGoTo('login')">🚪 Log Out</a>
+      </div>
+    </nav>
+  </div>
 
   <!-- ===== SCREEN 1: SPLASH ===== -->
   <div class="screen active" id="splash">
@@ -1006,14 +1175,14 @@
       <h2>HONEY SPOT</h2>
       <div style="position:relative;width:100%;max-width:480px;">
         <div class="map-container">
-          <div class="map-placeholder">
-            <div class="pin">📍</div>
-            <strong>UMass Boston Campus</strong>
-            <span>Wheatley Hall · Campus Library</span>
-            <small style="color:#888">Add Google Maps API key to enable live map</small>
-          </div>
+          <iframe
+            src="https://www.google.com/maps/embed/v1/place?key=AIzaSyC0Q6uN7-3GTZfl8bIhe5n37xF4fo-jGig&q=University+Hall,+UMass+Boston,+Boston,+MA&zoom=17"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
         </div>
-        <div style="position:absolute;left:-10px;top:40%;font-size:11px;font-weight:800;text-align:center;background:white;border-radius:10px;padding:6px 8px;border:1px solid #eee;">
+        <div style="position:absolute;left:-10px;top:40%;font-size:11px;font-weight:800;text-align:center;background:white;border-radius:10px;padding:6px 8px;border:1px solid #eee;z-index:2;">
           🐝<br>I'M A<br>NEW-BEE
         </div>
       </div>
@@ -1148,19 +1317,20 @@
         </div>
       </div>
       <div class="map-box">
-        <div class="map-placeholder" style="height:100%;">
-          <div class="pin">🗺️</div>
-          <strong>UMass Boston → Campus Library 4th Floor</strong>
-          <span style="font-size:12px;color:#777">Live directions via Google Maps API</span>
-        </div>
+        <iframe
+          src="https://www.google.com/maps/embed/v1/place?key=AIzaSyC0Q6uN7-3GTZfl8bIhe5n37xF4fo-jGig&q=University+Hall,+UMass+Boston,+Boston,+MA&zoom=17"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
       </div>
       <div class="map-info-card">
         <div class="left">
           <h4>🐝 Your hive spot is close!</h4>
-          <p>📍 Campus Library — 4th Floor</p>
-          <p><span>📏 0.3 miles away</span> <span>⏱ 6 min walk</span></p>
+          <p>📍 University Hall — UMass Boston</p>
+          <p><span>📏 On Campus</span> <span>⏱ 5 min walk</span></p>
         </div>
-        <a class="btn-honey-pill" href="https://maps.google.com/?q=UMass+Boston+Campus+Library" target="_blank">Get Directions</a>
+        <a class="btn-honey-pill" href="https://www.google.com/maps/search/?api=1&query=University+Hall+UMass+Boston" target="_blank">Get Directions</a>
       </div>
     </div>
     <div class="nav-arrows">
@@ -1492,9 +1662,28 @@ function submitSurvey() {
   goTo('splash');
 }
 
-// ===== MENU (placeholder) =====
+// ===== MENU =====
 function toggleMenu() {
-  alert('📋 Menu\n\n• Home\n• Features\n• Reserve a Spot\n• Honey Spot Map\n• My Reservations\n• Notifications\n• Settings\n• Log Out');
+  const menu = document.getElementById('slide-menu');
+  const overlay = document.getElementById('menu-overlay');
+  const isOpen = menu.classList.contains('active');
+  if (isOpen) {
+    menu.classList.remove('active');
+    overlay.classList.remove('active');
+    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('open'));
+  } else {
+    menu.classList.add('active');
+    overlay.classList.add('active');
+    document.querySelectorAll('.menu-btn').forEach(b => b.classList.add('open'));
+  }
+}
+function menuGoTo(id) {
+  toggleMenu();
+  setTimeout(() => goTo(id), 260);
+}
+function toggleDropdown(dropId, chevId) {
+  document.getElementById(dropId).classList.toggle('open');
+  document.getElementById(chevId).classList.toggle('open');
 }
 
 // Init
